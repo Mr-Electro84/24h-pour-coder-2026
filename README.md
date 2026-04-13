@@ -25,11 +25,13 @@ Avant de commencer à coder, assurez-vous que chaque membre de l'équipe a confi
 
 ## 🚀 2. Démarrer le projet (Fork & Clone)
 
+L'ensemble des commandes nécessaire pour effectuer cette étape sont trouvable via  "[Clean Sheet git](https://training.github.com/downloads/fr/github-git-cheat-sheet.pdf)". Si vous n'êtes pas à l'aise avec github, n'hésitez pas à demander de l'aide à un organisateur, pour ne pas perdre trop de temps. Ce n'est pas le coeur de votre projet.
+
 Un seul membre de l'équipe doit effectuer ces premières étapes :
 
 1. Cliquez sur le bouton "Fork" en haut à droite de cette page pour créer votre propre dépôt d'équipe.
 2. Clonez votre nouveau dépôt sur votre machine locale.
-3. Déposez réguliérement votre travail sur ce repo selon les bonnes pratiques git : [Clean Sheet git](https://training.github.com/downloads/fr/github-git-cheat-sheet.pdf)
+3. Déposez réguliérement votre travail sur ce repo selon les bonnes pratiques git
 
 ---
 
@@ -100,12 +102,11 @@ run
 
 ## 🎯 6. Rendu Final :
 
-Vous avez jusqu'au 16 avril 2026 à XXh pour effectuer des commits sur vos repos personnels. Passé ce délai, si vous effectuez un commit, votre équipe peut être disqualifiée.
+Vous avez jusqu'au 16 avril 2026 à 11h pour effectuer des commits sur vos repos personnels. Passé ce délai, si vous effectuez un commit, votre équipe peut être disqualifiée.
 
 Votre repo doit contenir :
 
 - Votre code source
-
-* Un fichier README.md présentant votre projet, son principe et des captures d'écran.
+- Un fichier README.md présentant votre projet, son principe et des captures d'écran.
 
 Bonne chance à tous, et que le meilleur code l'emporte ! 🚀
