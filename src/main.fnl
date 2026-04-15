@@ -47,19 +47,24 @@
 
   (if (= niveau 0) ;; Menu principal
       (do
-      (print "SPACE COLLIDER" 30 (+ 45 decalage-y) couleur-texte false 2)
-      ;; Menu principal (bouton commencer)
-      (print "PLAY" 30 70 couleur-texte false 1)
-      (print "Skin" 30 80 couleur-texte false 1)
-      (print "Settings" 30 90  couleur-texte false 1)
+      (print "SPACE COLLIDER" 30 (+ 35 decalage-y) couleur-texte false 2)
 
-      (when (and (btn 0) (> select_niv 0)) (set select_niv (+ select_niv 1)))
-      (when (and (btn 1) (< select_niv 2)) (set select_niv (- select_niv 1)))
+      ;; carré de sélection
+      (if (= select_niv 0) (rect 18 60 6 6 couleur-texte))
+      (if (= select_niv 1) (rect 18 70 6 6 couleur-texte))
+      (if (= select_niv 2) (rect 18 80 6 6 couleur-texte))
 
-      (print (tostring select_niv) 100 10 couleur-texte)
-      
-      )
+      ;; menu
+      (print "PLAY" 30 60 couleur-texte false 1)
+      (print "Skin" 30 70 couleur-texte false 1)
+      (print "Settings" 30 80 couleur-texte false 1)
+
+      (when (and (btnp 0) (> select_niv 0))
+        (set select_niv (- select_niv 1)))
+      (when (and (btnp 1) (< select_niv 2))
+        (set select_niv (+ select_niv 1)))
+    )
   )
   
   ;; 4. Fait avancer le temps
-  (set t (+ t 0.1)))
+  (set t (+ t 0.05)))
