@@ -51,12 +51,14 @@
       ;; Menu principal (bouton commencer)
       (print "PLAY" 30 70 couleur-texte false 1)
       (print "Skin" 30 80 couleur-texte false 1)
-      (print "Settings" 30 90  couleur-texte false 1))
+      (print "Settings" 30 90  couleur-texte false 1)
 
       (when (and (btn 0) (> select_niv 0)) (set select_niv (+ select_niv 1)))
       (when (and (btn 1) (< select_niv 2)) (set select_niv (- select_niv 1)))
 
-      (print (.. select_niv) 100 10 0)
+      (print (tostring select_niv) 100 10 couleur-texte)
+      
+      )
   )
   
   ;; 4. Fait avancer le temps
