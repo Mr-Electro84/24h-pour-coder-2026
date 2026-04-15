@@ -42,8 +42,8 @@
   ;; 3. Affiche le texte au centre avec l'effet de vague
   (print "WORKFLOW OPERATIONNEL !" 45 (+ 64 decalage-y) couleur-texte) ;; (print "texte" x y couleur)
 
-  (local vaisseau (Vaisseau.new 100 100 100))
-  (vaisseau:desc)
+  (local vais (Vaisseau.new 0 100 100 100))
+  (vais:desc)
   
   ;; 4. Fait avancer le temps
   (set t (+ t 0.1)))
