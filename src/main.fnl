@@ -12,8 +12,10 @@
 
 ;; Constructeur
 (fn Vaisseau.new [num pos_x pos_y pv]
-  (let [instance {:num num :pos_x pos_x :pos_y pos_y :pv pv}]
+  ;; On ajoute les variables vx et vy (la vélocité) ainsi que l'angle
+  (let [instance {:num num :pos_x pos_x :pos_y pos_y :pv pv :vx 0 :vy 0 :angle 0}]
     (setmetatable instance Vaisseau)))
+
 
 ;; Méthodes
 (fn Vaisseau.desc [self]
@@ -25,7 +27,7 @@
 )
 
 (fn Vaisseau.dessiner [self]
-  (spr self.num self.pos_x self.pos_y -1 1 0 0 2 2)
+  (spr self.num self.pos_x self.pos_y 0 1 0 0 2 2)
 )
 
 ;; ## Objet Planete
@@ -33,16 +35,34 @@
 (set Planete.__index Planete)
 
 ;; Constructeur
-(fn Planete.new [pos_x pos_y rayon gravite couleur]
-  (let [instance {:pos_x pos_x :pos_y pos_y :rayon rayon :gravite gravite :couleur couleur}]
+(fn Planete.new [pos_x pos_y rayon_gravite gravite id_sprite]
+  (let [instance {:pos_x pos_x :pos_y pos_y :rayon_gravite rayon_gravite :gravite gravite :id_sprite id_sprite}]
     (setmetatable instance Planete)))
+
+;; Id de sprites pour les planetes : 386 - Terre | 390 - Magma | 394 - Forêt | 450 - Métal | 454 - Trou noir
 
 ;; Méthodes
 (fn Planete.desc [self]
   (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
 
 (fn Planete.dessiner [self]
-  (circ self.pos_x self.pos_y self.rayon self.couleur))
+  (spr self.id_sprite self.pos_x self.pos_y 0 1 0 0 4 4))
+
+;; ## Objet Etoile
+(local Etoile {})
+(set Etoile.__index Etoile)
+
+;; Constructeur
+(fn Etoile.new [pos_x pos_y]
+  (let [instance {:pos_x pos_x :pos_y pos_y :prise false}]
+    (setmetatable instance Etoile)))
+
+;; Méthodes
+(fn Etoile.desc [self]
+  (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
+
+(fn Etoile.dessiner [self]
+  (spr 296 self.pos_x self.pos_y 0 1 0 0 2 2))
 
 ;; -- FIN DEFINITIONS OBJETS --
 
@@ -57,7 +77,36 @@
 (var select_opt_menu 0)
 (var musique false)
 
+(var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
+
+(var vitesse_vaisseau 0) ;; déplacement x
+(var placement_vaisseau 0) ;; placement (sur l'axe y)
+
+(var etoiles_prises 0)
+(var etoiles_requises 3)
+
+(var etoiles [])
+
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
+
+(fn reinitialiser_niveau []
+  (set etoiles_prises 0)
+  (set etoiles [
+    (Etoile.new 100 70)
+    (Etoile.new 60 60)
+    (Etoile.new 220 60)
+  ])
+  (set vaisseau.pos_x 5)
+  (set vaisseau.pos_y 60)
+  (set vaisseau.vx 0)
+  (set vaisseau.vy 0)
+  (set select_vitesse 0)
+  (set vitesse_vaisseau 0)
+)
+
+(var x 0)
+(var y 0)
+(var D_time (time))
 
 ;; Boucle principale exécutée à 60 FPS
 (fn _G.TIC []
@@ -75,11 +124,22 @@
 
   ;; Afficher le niveau si la variable niveau est supérieur à 1
   (when (> niveau 0)
-    (print (.. "Niveau : " niveau) 10 10 couleur-texte)
+    (print (.. "Niveau : " niveau) 5 10 couleur-texte)
   )
 
   (if (= niveau 0) ;; Menu principal
       (do
+      (map x y)
+      (if (> (- (time) D_time) 50)
+        (do
+          (set x (+ x 1))
+          (set y (+ y 1))
+          (when (> x 29) (set x 0))
+          (when (> y 16) (set y 0))
+          (set D_time (time))
+        )
+      )
+
       ;; Fait avancer le temps (pour l'animation du texte)
       (set anim_t (+ anim_t 0.05))
 
@@ -103,7 +163,12 @@
         (set select_opt_menu (+ select_opt_menu 1)))
 
       (when (keyp 50)
-        (if (= select_opt_menu 0) (set niveau 1))
+        (if (= select_opt_menu 0) 
+          (do
+            (reinitialiser_niveau)
+            (set niveau 1)
+          )
+        )
       )
       
     )
@@ -114,13 +179,113 @@
         (set musique false)
       )
 
-      (local planete1 (Planete.new 100 100 10 10 10))
+      (local planete1 (Planete.new 100 100 50 10 390)) ;; rappel (Planete.new pos_x pos_y rayon_gravite gravite id_sprite)
       (planete1:dessiner)
-      (local planete2 (Planete.new 50 50 10 10 4)) ;; autre couleur et autre placement
+      (local planete2 (Planete.new 50 30 50 12 386)) ;; autre couleur et autre placement
       (planete2:dessiner)
-      (local planete3 (Planete.new 200 80 10 10 12)) ;; autre couleur et autre placement
+      (local planete3 (Planete.new 200 90 30 5 394)) ;; autre couleur et autre placement
       (planete3:dessiner)
+      ;; Grouper les planètes dans un tableau pour pouvoir itérer dessus pour la gravité
+      (local planetes [planete1 planete2 planete3])
+
+      ;; Gestion et affichage des étoiles
+      (for [i 1 (# etoiles)]
+        (let [e (. etoiles i)]
+          (when (not e.prise)
+            ;; On calcule la distance (les sprites font 16x16, on centre à +8)
+            (let [dx (- (+ e.pos_x 8) (+ vaisseau.pos_x 8))
+                  dy (- (+ e.pos_y 8) (+ vaisseau.pos_y 8))
+                  dist (math.sqrt (+ (* dx dx) (* dy dy)))]
+              (when (< dist 12)
+                (set e.prise true)
+                (set etoiles_prises (+ etoiles_prises 1))
+              )
+            )
+            (e:dessiner))))
+
       (vaisseau:dessiner)
+      
+      ;; Affichage du compteur d'étoiles
+      (print (.. "Etoiles : " etoiles_prises "/" etoiles_requises) 5 2 couleur-texte)
+
+      ;; Victoire
+      (when (>= etoiles_prises etoiles_requises)
+        (print "NIVEAU TERMINE !" 80 60 11 false 2)
+        (print "Presser Entree pour la suite" 75 80 11 false 1)
+        (when (keyp 50)
+          (set niveau 2)
+        )
+      )
+
+      ;; Réinitialisation niveau en appuyant sur BACKSPACE (51)
+      (when (keyp 51)
+        (reinitialiser_niveau)
+      )
+
+      (if (= select_vitesse 0)
+        (do
+          (print "Espace pour commencer" 50 130 couleur-texte false 1)
+          (print (.. "Vitesse: " (math.floor (* vitesse_vaisseau 10))) 50 120 couleur-texte false 1)
+          
+          ;; Placement du vaisseau (Haut / Bas)
+          (when (btn 0) (set vaisseau.pos_y (math.max 0 (- vaisseau.pos_y 1))))
+          (when (btn 1) (set vaisseau.pos_y (math.min 136 (+ vaisseau.pos_y 1))))
+          
+          ;; Configuration de la vitesse (Gauche / Droite)
+          (when (btn 2) 
+            (set vitesse_vaisseau (math.max 0 (- vitesse_vaisseau 0.05))))
+          (when (btn 3) 
+            (set vitesse_vaisseau (math.min 10 (+ vitesse_vaisseau 0.05))))
+        )
+      )
+
+      ;; Lancement de la physique une fois l'espace pressé
+      (if (or (and (keyp 48) (= select_vitesse 0)) (= select_vitesse 1))
+        (do
+          (if (= select_vitesse 0) 
+            (do
+              ;; L'impulsion initiale est appliquée au moment exact du lancement
+              (set vaisseau.vx vitesse_vaisseau)
+              (set select_vitesse 1)
+            )
+          )
+
+          ;; --- DEBUT DE LA PHYSIQUE ET GRAVITE ---
+          
+          ;; Calcul vectoriel complet pour la gravité en parcourant la liste planetes
+          (for [i 1 (# planetes)]
+            (let [p (. planetes i)]
+              (let [
+                dx (- p.pos_x vaisseau.pos_x)
+                dy (- p.pos_y vaisseau.pos_y)
+                dist (math.sqrt (+ (* dx dx) (* dy dy)))
+                ;; Empêcher la distance de tomber trop bas pour éviter une division par zéro/infinité
+                dist (math.max dist 10)
+
+                nx (/ dx dist)
+                ny (/ dy dist)
+
+                ;; Calcul de la force : On utilise p.rayon_gravite du "main" au lieu de la constante 90 (si désiré)
+                force (if (< dist p.rayon_gravite) ;; ou (< dist 90) selon le rendu voulu
+                        (/ p.gravite dist) ;; ou (/ 2 dist) 
+                        0)
+              ]
+                ;; On ajoute la force de cette planète à la vélocité actuelle du vaisseau
+                (set vaisseau.vx (+ vaisseau.vx (* nx force)))
+                (set vaisseau.vy (+ vaisseau.vy (* ny force))))))
+
+          ;; On applique la vélocité totale retenue sur le déplacement du vaisseau
+          (vaisseau:deplacer vaisseau.vx vaisseau.vy)
+
+          ;; Amortissement (damping) - Simule un léger frein ou frottement pour ne pas accélérer infiniment
+          (set vaisseau.vx (* vaisseau.vx 0.97))
+          (set vaisseau.vy (* vaisseau.vy 0.97))
+          
+          ;; --- FIN DE LA PHYSIQUE ET GRAVITE ---
+
+        )
+      )
+
     )
   )
   
