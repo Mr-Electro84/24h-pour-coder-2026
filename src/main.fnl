@@ -5,10 +5,9 @@
 
 (var couleur-texte 12)  ; 6 = vert. Essaie 11 (bleu clair)
 (var couleur-fond 8)  ; 12 = Blanc. Essaie 0 (Noir)
-(var col 0)
+
 ;; Variable pour l'animation
 (var t 0)
-(var horloge (time))
 
 ;; Variable pour le niveau
 (var niveau 0)
@@ -40,17 +39,6 @@
   ;; 2. Calcule un petit mouvement de vague
   (var decalage-y (* (math.sin t) 5))
   
-  (map)
-  (if (> (- (time) horloge) 100)
-  (do
-  (set col (+ col 1))
-  (set horloge (time))
-  (if (= col 16) (set col 0))
-  (if (= col 12) (set col 13)))
-  
-  )
-  
-  (circ 120 78 50 col)
   ;; 3. Affiche le texte au centre avec l'effet de vague
   ;;(print "WORKFLOW OPERATIONNEL !" 45 (+ 64 decalage-y) couleur-texte) ;; (print "texte" x y couleur)
 
