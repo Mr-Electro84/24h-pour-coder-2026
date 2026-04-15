@@ -1,13 +1,35 @@
-;; title:  Template de base
-;; author: Quentin
-;; desc:   Template de base pour le 24h pour coder 2026
+;; title:  Space Collider
+;; author: Brigade anti-virus
+;; desc:   Space Collider - Un jeu d'espace
 ;; script: fennel
 
-(var couleur-texte 11)  ; 6 = vert. Essaie 11 (bleu clair)
-(var couleur-fond 12)  ; 12 = Blanc. Essaie 0 (Noir)
+(var couleur-texte 12)  ; 6 = vert. Essaie 11 (bleu clair)
+(var couleur-fond 8)  ; 12 = Blanc. Essaie 0 (Noir)
 
 ;; Variable pour l'animation
 (var t 0)
+
+;; Variable pour le niveau
+(var niveau 0)
+
+;; -- Objet Vaisseau Utilisateur --
+;; Définition du prototype (la "classe")
+(local Vaisseau {})
+(set Vaisseau.__index Vaisseau)
+
+;; Constructeur
+(fn Vaisseau.new [num pos_x pos_y pv]
+  (let [instance {:num num :pos_x pos_x :pos_y pos_y :pv pv}]
+    (setmetatable instance Vaisseau)))
+
+;; Méthodes
+(fn Vaisseau.desc [self]
+  (print (.. "pos x : " self.pos_x " pos y : " self.pos_y " pv : " self.pv) 45 45 12))
+
+(fn Vaisseau.deplacer [self delta_x delta_y]
+  (set self.pos_x (+ self.pos_x delta_x))
+  (set self.pos_y (+ self.pos_y delta_y))
+)
 
 ;; Boucle principale exécutée à 60 FPS
 (fn _G.TIC []
@@ -19,6 +41,9 @@
   
   ;; 3. Affiche le texte au centre avec l'effet de vague
   (print "WORKFLOW OPERATIONNEL !" 45 (+ 64 decalage-y) couleur-texte) ;; (print "texte" x y couleur)
+
+  (local vaisseau (Vaisseau.new 100 100 100))
+  (vaisseau:desc)
   
   ;; 4. Fait avancer le temps
   (set t (+ t 0.1)))
