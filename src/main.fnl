@@ -80,6 +80,9 @@
 
   (if (= niveau 0) ;; Menu principal
       (do
+      ;; Fait avancer le temps (pour l'animation du texte)
+      (set anim_t (+ anim_t 0.05))
+
       (print "SPACE COLLIDER" 30 (+ 35 decalage-y) couleur-texte false 2)
 
       ;; carré de sélection
@@ -121,5 +124,4 @@
     )
   )
   
-  ;; Fait avancer le temps
-  (set anim_t (+ anim_t 0.05)))
+)
