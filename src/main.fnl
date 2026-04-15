@@ -11,7 +11,7 @@
 
 ;; Variable pour le niveau
 (var niveau 0)
-
+(var select_niv 0)
 ;; -- Objet Vaisseau Utilisateur --
 ;; Définition du prototype (la "classe")
 (local Vaisseau {})
@@ -45,9 +45,18 @@
   (local vais (Vaisseau.new 0 100 100 100))
   ;;(vais:desc)
 
-  (if (= niveau 0)
-      (print "SPACE COLLIDER" 64 (+ 45 decalage-y) couleur-texte)
+  (if (= niveau 0) ;; Menu principal
+      (do
+      (print "SPACE COLLIDER" 30 (+ 45 decalage-y) couleur-texte false 2)
       ;; Menu principal (bouton commencer)
+      (print "PLAY" 30 70 couleur-texte false 1)
+      (print "Skin" 30 80 couleur-texte false 1)
+      (print "Settings" 30 90  couleur-texte false 1))
+
+      (when (and (btn 0) (> select_niv 0)) (set select_niv (+ select_niv 1)))
+      (when (and (btn 1) (< select_niv 2)) (set select_niv (- select_niv 1)))
+
+      (print (.. select_niv) 100 10 0)
   )
   
   ;; 4. Fait avancer le temps
