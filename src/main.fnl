@@ -54,7 +54,7 @@
 
 ;; Constructeur
 (fn Etoile.new [pos_x pos_y]
-  (let [instance {:pos_x pos_x :pos_y pos_y}]
+  (let [instance {:pos_x pos_x :pos_y pos_y :prise false}]
     (setmetatable instance Etoile)))
 
 ;; Méthodes
@@ -82,7 +82,27 @@
 (var vitesse_vaisseau 0) ;; déplacement x
 (var placement_vaisseau 0) ;; placement (sur l'axe y)
 
+(var etoiles_prises 0)
+(var etoiles_requises 3)
+
+(var etoiles [])
+
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
+
+(fn reinitialiser_niveau []
+  (set etoiles_prises 0)
+  (set etoiles [
+    (Etoile.new 100 70)
+    (Etoile.new 60 60)
+    (Etoile.new 220 60)
+  ])
+  (set vaisseau.pos_x 5)
+  (set vaisseau.pos_y 60)
+  (set vaisseau.vx 0)
+  (set vaisseau.vy 0)
+  (set select_vitesse 0)
+  (set vitesse_vaisseau 0)
+)
 
 (var x 0)
 (var y 0)
@@ -104,7 +124,7 @@
 
   ;; Afficher le niveau si la variable niveau est supérieur à 1
   (when (> niveau 0)
-    (print (.. "Niveau : " niveau) 10 10 couleur-texte)
+    (print (.. "Niveau : " niveau) 5 10 couleur-texte)
   )
 
   (if (= niveau 0) ;; Menu principal
@@ -143,7 +163,12 @@
         (set select_opt_menu (+ select_opt_menu 1)))
 
       (when (keyp 50)
-        (if (= select_opt_menu 0) (set niveau 1))
+        (if (= select_opt_menu 0) 
+          (do
+            (reinitialiser_niveau)
+            (set niveau 1)
+          )
+        )
       )
       
     )
@@ -154,23 +179,48 @@
         (set musique false)
       )
 
-      (local planete1 (Planete.new 100 100 30 10 390)) ;; rappel (Planete.new pos_x pos_y rayon_gravite gravite id_sprite)
+      (local planete1 (Planete.new 100 100 50 10 390)) ;; rappel (Planete.new pos_x pos_y rayon_gravite gravite id_sprite)
       (planete1:dessiner)
-      (local planete2 (Planete.new 50 30 30 12 386)) ;; autre couleur et autre placement
+      (local planete2 (Planete.new 50 30 50 12 386)) ;; autre couleur et autre placement
       (planete2:dessiner)
-      (local planete3 (Planete.new 200 80 30 5 394)) ;; autre couleur et autre placement
+      (local planete3 (Planete.new 200 90 30 5 394)) ;; autre couleur et autre placement
       (planete3:dessiner)
       ;; Grouper les planètes dans un tableau pour pouvoir itérer dessus pour la gravité
       (local planetes [planete1 planete2 planete3])
 
-      (local etoile1 (Etoile.new 100 70)) ;; placer au dessus de planete 1
-      (etoile1:dessiner)
-      (local etoile2 (Etoile.new 60 60))
-      (etoile2:dessiner)
-      (local etoile3 (Etoile.new 220 60))
-      (etoile3:dessiner)
+      ;; Gestion et affichage des étoiles
+      (for [i 1 (# etoiles)]
+        (let [e (. etoiles i)]
+          (when (not e.prise)
+            ;; On calcule la distance (les sprites font 16x16, on centre à +8)
+            (let [dx (- (+ e.pos_x 8) (+ vaisseau.pos_x 8))
+                  dy (- (+ e.pos_y 8) (+ vaisseau.pos_y 8))
+                  dist (math.sqrt (+ (* dx dx) (* dy dy)))]
+              (when (< dist 12)
+                (set e.prise true)
+                (set etoiles_prises (+ etoiles_prises 1))
+              )
+            )
+            (e:dessiner))))
 
       (vaisseau:dessiner)
+      
+      ;; Affichage du compteur d'étoiles
+      (print (.. "Etoiles : " etoiles_prises "/" etoiles_requises) 5 2 couleur-texte)
+
+      ;; Victoire
+      (when (>= etoiles_prises etoiles_requises)
+        (print "NIVEAU TERMINE !" 80 60 11 false 2)
+        (print "Presser Entree pour la suite" 75 80 11 false 1)
+        (when (keyp 50)
+          (set niveau 2)
+        )
+      )
+
+      ;; Réinitialisation niveau en appuyant sur BACKSPACE (51)
+      (when (keyp 51)
+        (reinitialiser_niveau)
+      )
 
       (if (= select_vitesse 0)
         (do
