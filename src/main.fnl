@@ -11,7 +11,7 @@
 
 ;; Variable pour le niveau
 (var niveau 0)
-
+(var select_niv 0)
 ;; -- Objet Vaisseau Utilisateur --
 ;; Définition du prototype (la "classe")
 (local Vaisseau {})
@@ -40,10 +40,31 @@
   (var decalage-y (* (math.sin t) 5))
   
   ;; 3. Affiche le texte au centre avec l'effet de vague
-  (print "WORKFLOW OPERATIONNEL !" 45 (+ 64 decalage-y) couleur-texte) ;; (print "texte" x y couleur)
+  ;;(print "WORKFLOW OPERATIONNEL !" 45 (+ 64 decalage-y) couleur-texte) ;; (print "texte" x y couleur)
 
   (local vais (Vaisseau.new 0 100 100 100))
-  (vais:desc)
+  ;;(vais:desc)
+
+  (if (= niveau 0) ;; Menu principal
+      (do
+      (print "SPACE COLLIDER" 30 (+ 35 decalage-y) couleur-texte false 2)
+
+      ;; carré de sélection
+      (if (= select_niv 0) (rect 18 60 6 6 couleur-texte))
+      (if (= select_niv 1) (rect 18 70 6 6 couleur-texte))
+      (if (= select_niv 2) (rect 18 80 6 6 couleur-texte))
+
+      ;; menu
+      (print "PLAY" 30 60 couleur-texte false 1)
+      (print "Skin" 30 70 couleur-texte false 1)
+      (print "Settings" 30 80 couleur-texte false 1)
+
+      (when (and (btnp 0) (> select_niv 0))
+        (set select_niv (- select_niv 1)))
+      (when (and (btnp 1) (< select_niv 2))
+        (set select_niv (+ select_niv 1)))
+    )
+  )
   
   ;; 4. Fait avancer le temps
-  (set t (+ t 0.1)))
+  (set t (+ t 0.05)))
