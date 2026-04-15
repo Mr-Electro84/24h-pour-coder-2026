@@ -44,6 +44,22 @@
 (fn Planete.dessiner [self]
   (circ self.pos_x self.pos_y self.rayon self.couleur))
 
+;; ## Objet Etoile
+(local Etoile {})
+(set Etoile.__index Etoile)
+
+;; Constructeur
+(fn Etoile.new [pos_x pos_y]
+  (let [instance {:pos_x pos_x :pos_y pos_y}]
+    (setmetatable instance Etoile)))
+
+;; Méthodes
+(fn Etoile.desc [self]
+  (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
+
+(fn Etoile.dessiner [self]
+  (spr 296 self.pos_x self.pos_y -1 1 0 0 2 2))
+
 ;; -- FIN DEFINITIONS OBJETS --
 
 (var couleur-texte 12)  ; 6 = vert. Essaie 11 (bleu clair)
@@ -57,7 +73,16 @@
 (var select_opt_menu 0)
 (var musique false)
 
+(var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
+
+(var vitesse_vaisseau 0) ;; déplacement x
+(var vitesse_vaisseau_y 0) ;; déplacement y
+
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
+
+(var x 0)
+(var y 0)
+(var D_time (time))
 
 ;; Boucle principale exécutée à 60 FPS
 (fn _G.TIC []
@@ -80,8 +105,22 @@
 
   (if (= niveau 0) ;; Menu principal
       (do
+      (map x y)
+      (if (> (- (time) D_time) 50)
+        (do
+          (set x (+ x 1))
+          (set y (+ y 1))
+          (when (> x 29) (set x 0))
+          (when (> y 16) (set y 0))
+          (set D_time (time))
+        )
+      )
+
       ;; Fait avancer le temps (pour l'animation du texte)
       (set anim_t (+ anim_t 0.05))
+
+      ;; Dessiner le fond
+      ;;(map 0 0 30 17 0 0 -1 1)
 
       (print "SPACE COLLIDER" 30 (+ 35 decalage-y) couleur-texte false 2)
 
@@ -114,13 +153,33 @@
         (set musique false)
       )
 
-      (local planete1 (Planete.new 100 100 10 10 10))
+      (local planete1 (Planete.new 100 100 10 10 10)) ;; rappel (Planete.new pos_x pos_y rayon gravite couleur)
       (planete1:dessiner)
-      (local planete2 (Planete.new 50 50 10 10 4)) ;; autre couleur et autre placement
+      (local planete2 (Planete.new 50 30 10 10 4)) ;; autre couleur et autre placement
       (planete2:dessiner)
       (local planete3 (Planete.new 200 80 10 10 12)) ;; autre couleur et autre placement
       (planete3:dessiner)
+      (local etoile1 (Etoile.new 100 70)) ;; placer au dessus de planete 1
+      (etoile1:dessiner)
+      (local etoile2 (Etoile.new 60 60))
+      (etoile2:dessiner)
+      (local etoile3 (Etoile.new 220 80))
+      (etoile3:dessiner)
+
       (vaisseau:dessiner)
+
+      (if (= select_vitesse 0)
+        (print "Espace pour commencer" 50 130 couleur-texte false 1) ;; placer le texte en bas centré
+      )
+
+      ;; Si la touche espace est pressé, le joueur configure la vitesse du vaisseau
+      (if (or (and (keyp 48) (= select_vitesse 0)) (= select_vitesse 1))
+        (do
+          (print "Vitesse du vaisseau" 50 130 couleur-texte false 1)
+          (set select_vitesse 1)
+        )
+      )
+
     )
   )
   
