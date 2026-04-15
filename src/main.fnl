@@ -134,9 +134,6 @@
       (when (keyp 50)
         (if (= select_opt_menu 0) (set niveau 1))
       )
-
-      ;; Fait avancer le temps
-      (set anim_t (+ anim_t 0.05))
       
     )
     (when (= niveau 1)
@@ -156,4 +153,5 @@
     )
   )
   
-)
+  ;; Fait avancer le temps
+  (set anim_t (+ anim_t 0.05)))
