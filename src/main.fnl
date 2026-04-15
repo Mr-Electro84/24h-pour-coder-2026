@@ -12,8 +12,10 @@
 
 ;; Constructeur
 (fn Vaisseau.new [num pos_x pos_y pv]
-  (let [instance {:num num :pos_x pos_x :pos_y pos_y :pv pv}]
+  ;; On ajoute les variables vx et vy (la vélocité) ainsi que l'angle
+  (let [instance {:num num :pos_x pos_x :pos_y pos_y :pv pv :vx 0 :vy 0 :angle 0}]
     (setmetatable instance Vaisseau)))
+
 
 ;; Méthodes
 (fn Vaisseau.desc [self]
@@ -25,7 +27,7 @@
 )
 
 (fn Vaisseau.dessiner [self]
-  (spr self.num self.pos_x self.pos_y -1 1 0 0 2 2)
+  (spr self.num self.pos_x self.pos_y 0 1 0 0 2 2)
 )
 
 ;; ## Objet Planete
@@ -33,16 +35,18 @@
 (set Planete.__index Planete)
 
 ;; Constructeur
-(fn Planete.new [pos_x pos_y rayon gravite couleur]
-  (let [instance {:pos_x pos_x :pos_y pos_y :rayon rayon :gravite gravite :couleur couleur}]
+(fn Planete.new [pos_x pos_y rayon_gravite gravite id_sprite]
+  (let [instance {:pos_x pos_x :pos_y pos_y :rayon_gravite rayon_gravite :gravite gravite :id_sprite id_sprite}]
     (setmetatable instance Planete)))
+
+;; Id de sprites pour les planetes : 386 - Terre | 390 - Magma | 394 - Forêt | 450 - Métal | 454 - Trou noir
 
 ;; Méthodes
 (fn Planete.desc [self]
   (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
 
 (fn Planete.dessiner [self]
-  (circ self.pos_x self.pos_y self.rayon self.couleur))
+  (spr self.id_sprite self.pos_x self.pos_y 0 1 0 0 4 4))
 
 ;; ## Objet Etoile
 (local Etoile {})
@@ -58,7 +62,7 @@
   (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
 
 (fn Etoile.dessiner [self]
-  (spr 296 self.pos_x self.pos_y -1 1 0 0 2 2))
+  (spr 296 self.pos_x self.pos_y 0 1 0 0 2 2))
 
 ;; -- FIN DEFINITIONS OBJETS --
 
@@ -76,7 +80,7 @@
 (var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
 
 (var vitesse_vaisseau 0) ;; déplacement x
-(var vitesse_vaisseau_y 0) ;; déplacement y
+(var placement_vaisseau 0) ;; placement (sur l'axe y)
 
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
 
@@ -119,9 +123,6 @@
       ;; Fait avancer le temps (pour l'animation du texte)
       (set anim_t (+ anim_t 0.05))
 
-      ;; Dessiner le fond
-      ;;(map 0 0 30 17 0 0 -1 1)
-
       (print "SPACE COLLIDER" 30 (+ 35 decalage-y) couleur-texte false 2)
 
       ;; carré de sélection
@@ -153,30 +154,85 @@
         (set musique false)
       )
 
-      (local planete1 (Planete.new 100 100 10 10 10)) ;; rappel (Planete.new pos_x pos_y rayon gravite couleur)
+      (local planete1 (Planete.new 100 100 30 10 390)) ;; rappel (Planete.new pos_x pos_y rayon_gravite gravite id_sprite)
       (planete1:dessiner)
-      (local planete2 (Planete.new 50 30 10 10 4)) ;; autre couleur et autre placement
+      (local planete2 (Planete.new 50 30 30 12 386)) ;; autre couleur et autre placement
       (planete2:dessiner)
-      (local planete3 (Planete.new 200 80 10 10 12)) ;; autre couleur et autre placement
+      (local planete3 (Planete.new 200 80 30 5 394)) ;; autre couleur et autre placement
       (planete3:dessiner)
+      ;; Grouper les planètes dans un tableau pour pouvoir itérer dessus pour la gravité
+      (local planetes [planete1 planete2 planete3])
+
       (local etoile1 (Etoile.new 100 70)) ;; placer au dessus de planete 1
       (etoile1:dessiner)
       (local etoile2 (Etoile.new 60 60))
       (etoile2:dessiner)
-      (local etoile3 (Etoile.new 220 80))
+      (local etoile3 (Etoile.new 220 60))
       (etoile3:dessiner)
 
       (vaisseau:dessiner)
 
       (if (= select_vitesse 0)
-        (print "Espace pour commencer" 50 130 couleur-texte false 1) ;; placer le texte en bas centré
+        (do
+          (print "Espace pour commencer" 50 130 couleur-texte false 1)
+          (print (.. "Vitesse: " (math.floor (* vitesse_vaisseau 10))) 50 120 couleur-texte false 1)
+          
+          ;; Placement du vaisseau (Haut / Bas)
+          (when (btn 0) (set vaisseau.pos_y (math.max 0 (- vaisseau.pos_y 1))))
+          (when (btn 1) (set vaisseau.pos_y (math.min 136 (+ vaisseau.pos_y 1))))
+          
+          ;; Configuration de la vitesse (Gauche / Droite)
+          (when (btn 2) 
+            (set vitesse_vaisseau (math.max 0 (- vitesse_vaisseau 0.05))))
+          (when (btn 3) 
+            (set vitesse_vaisseau (math.min 10 (+ vitesse_vaisseau 0.05))))
+        )
       )
 
-      ;; Si la touche espace est pressé, le joueur configure la vitesse du vaisseau
+      ;; Lancement de la physique une fois l'espace pressé
       (if (or (and (keyp 48) (= select_vitesse 0)) (= select_vitesse 1))
         (do
-          (print "Vitesse du vaisseau" 50 130 couleur-texte false 1)
-          (set select_vitesse 1)
+          (if (= select_vitesse 0) 
+            (do
+              ;; L'impulsion initiale est appliquée au moment exact du lancement
+              (set vaisseau.vx vitesse_vaisseau)
+              (set select_vitesse 1)
+            )
+          )
+
+          ;; --- DEBUT DE LA PHYSIQUE ET GRAVITE ---
+          
+          ;; Calcul vectoriel complet pour la gravité en parcourant la liste planetes
+          (for [i 1 (# planetes)]
+            (let [p (. planetes i)]
+              (let [
+                dx (- p.pos_x vaisseau.pos_x)
+                dy (- p.pos_y vaisseau.pos_y)
+                dist (math.sqrt (+ (* dx dx) (* dy dy)))
+                ;; Empêcher la distance de tomber trop bas pour éviter une division par zéro/infinité
+                dist (math.max dist 10)
+
+                nx (/ dx dist)
+                ny (/ dy dist)
+
+                ;; Calcul de la force : On utilise p.rayon_gravite du "main" au lieu de la constante 90 (si désiré)
+                force (if (< dist p.rayon_gravite) ;; ou (< dist 90) selon le rendu voulu
+                        (/ p.gravite dist) ;; ou (/ 2 dist) 
+                        0)
+              ]
+                ;; On ajoute la force de cette planète à la vélocité actuelle du vaisseau
+                (set vaisseau.vx (+ vaisseau.vx (* nx force)))
+                (set vaisseau.vy (+ vaisseau.vy (* ny force))))))
+
+          ;; On applique la vélocité totale retenue sur le déplacement du vaisseau
+          (vaisseau:deplacer vaisseau.vx vaisseau.vy)
+
+          ;; Amortissement (damping) - Simule un léger frein ou frottement pour ne pas accélérer infiniment
+          (set vaisseau.vx (* vaisseau.vx 0.97))
+          (set vaisseau.vy (* vaisseau.vy 0.97))
+          
+          ;; --- FIN DE LA PHYSIQUE ET GRAVITE ---
+
         )
       )
 
