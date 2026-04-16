@@ -265,7 +265,7 @@
       ;; Victoire
       (when (>= etoiles_prises etoiles_requises)
         (print "NIVEAU TERMINE !" 40 60 11 false 2)
-        (if (< niveau 2)
+        (if (< niveau 3)
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
