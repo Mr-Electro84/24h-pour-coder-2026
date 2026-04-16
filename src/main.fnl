@@ -68,6 +68,22 @@
 (fn Etoile.dessiner [self]
   (spr 296 self.pos_x self.pos_y 0 1 0 0 2 2))
 
+;; ## Objet astéroide
+(local Asteroide {})
+(set Asteroide.__index Asteroide)
+
+;; Constructeur
+(fn Asteroide.new [pos_x pos_y]
+  (let [instance {:pos_x pos_x :pos_y pos_y :prise false}]
+    (setmetatable instance Asteroide)))
+
+;; Méthodes
+(fn Asteroide.desc [self]
+  (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
+
+(fn Asteroide.dessiner [self]
+  (spr 330 self.pos_x self.pos_y 0 1 0 0 2 2))
+
 ;; -- FIN DEFINITIONS OBJETS --
 
 (var couleur-texte 12)  ; 6 = vert. Essaie 11 (bleu clair)
@@ -97,11 +113,13 @@
 
 (var etoiles [])
 (var planetes [])
+(var asteroides [])
 
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
 
 (fn reinitialiser_niveau [n]
   (set etoiles_prises 0)
+  (set asteroides [])
   (if (= n 1)
     (do
       (set etoiles [
@@ -156,6 +174,23 @@
         (Planete.new 100 60 40 8 386)   ;; Terre (id 386)
         (Planete.new 110 30 45 10 390)  ;; Magma (id 390)
         (Planete.new 60 30 35 25 454)  ;; Trou Noir (id 454)
+      ])
+    )
+    (= n 5)
+    (do
+      (set etoiles [
+        (Etoile.new 120 50)  ;; Étoile au centre
+        (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
+        (Etoile.new 210 90)  ;; Étoile au dessus de la Terre
+      ])
+      (set planetes [
+        ;; Seules la forêt et la Terre sont sur le schéma
+        (Planete.new 210 100 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 130 90 40 8 386)   ;; Terre (id 386)
+      ])
+      ;; Ajouter 1 astéroide
+      (set asteroides [
+        (Asteroide.new 210 62) ;; Astéroïde au dessus de l'étoile de Terre
       ])
     )
   )
@@ -230,7 +265,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 1)
+            (set niveau 5) ;; pour débug
             (reinitialiser_niveau niveau)
           )
         )
@@ -279,6 +314,21 @@
             )
             (e:dessiner))))
 
+      ;; Gestion et affichage des astéroides
+      (for [i 1 (# asteroides)]
+        (let [a (. asteroides i)]
+          (when (not a.prise)
+            ;; On calcule la distance (les sprites font 16x16, on centre à +8)
+            (let [dx (- (+ a.pos_x 8) (+ vaisseau.pos_x 8))
+                  dy (- (+ a.pos_y 8) (+ vaisseau.pos_y 8))
+                  dist (math.sqrt (+ (* dx dx) (* dy dy)))]
+              (when (< dist 12)
+                (music 3 -1 -1 false) ;; Track 3: Dégâts / Astéroide
+                (reinitialiser_niveau niveau)
+              )
+            )
+            (a:dessiner))))
+
       (vaisseau:dessiner)
       
       ;; Affichage du compteur d'étoiles
@@ -291,13 +341,13 @@
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
-          (if (< niveau 4)
+          (if (< niveau 5)
             (do
               (set niveau (+ niveau 1))
               (reinitialiser_niveau niveau)
             )
             (do
-              (set niveau 4)
+              (set niveau 5)
             )
           )
         )
