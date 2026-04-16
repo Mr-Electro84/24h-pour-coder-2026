@@ -181,16 +181,35 @@
       (set etoiles [
         (Etoile.new 120 50)  ;; Étoile au centre
         (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
-        (Etoile.new 210 90)  ;; Étoile au dessus de la Terre
+        (Etoile.new 180 90)  ;; Étoile au dessus de la Terre
       ])
       (set planetes [
-        ;; Seules la forêt et la Terre sont sur le schéma
-        (Planete.new 210 100 35 6 394)  ;; Forêt (id 394)
-        (Planete.new 130 90 40 8 386)   ;; Terre (id 386)
+        (Planete.new 100 80 40 8 386)   ;; Terre (id 386)
+        (Planete.new 150 95 35 6 394)  ;; Forêt (id 394)
       ])
       ;; Ajouter 1 astéroide
       (set asteroides [
-        (Asteroide.new 210 62) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 180 70) ;; Astéroïde au dessus de l'étoile de Terre
+      ])
+    )
+    (= n 6)
+    (do
+      (set etoiles [
+        (Etoile.new 110 90)  ;; Étoile au centre
+        (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
+        (Etoile.new 180 30)  ;; Étoile au dessus de la Terre
+      ])
+      (set planetes [
+        (Planete.new 60 80 40 8 386)   ;; Terre (id 386)
+        (Planete.new 110 50 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 150 90 45 10 390)  ;; Magma (id 390)
+        (Planete.new 150 30 50 15 450) ;; Métal (id 450)
+      ])
+      ;; Ajouter 1 astéroide
+      (set asteroides [
+        (Asteroide.new 50 30) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 50 70) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 110 40) ;; Astéroïde au dessus de l'étoile de Terre
       ])
     )
   )
@@ -265,7 +284,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 5) ;; pour débug
+            (set niveau 6) ;; pour débug
             (reinitialiser_niveau niveau)
           )
         )
@@ -341,13 +360,13 @@
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
-          (if (< niveau 5)
+          (if (< niveau 6)
             (do
               (set niveau (+ niveau 1))
               (reinitialiser_niveau niveau)
             )
             (do
-              (set niveau 5)
+              (set niveau 0)
             )
           )
         )
