@@ -137,7 +137,7 @@
       ])
       (set planetes [
         (Planete.new 100 100 50 10 390)
-        (Planete.new 50 30 50 12 386)
+        (Planete.new 50 25 50 12 386)
         (Planete.new 200 90 30 5 394)
       ])
     )
@@ -371,7 +371,10 @@
                 (set etoiles_prises (+ etoiles_prises 1))
                 ;; Jouer la piste audio correspondante à l'événement
                 (if (= etoiles_prises etoiles_requises)
-                  (music 1 -1 -1 false) ;; Track 1: Niveau terminé
+                  (do
+                    (music 1 -1 -1 false) ;; Track 1: Niveau terminé
+                    (set timer_sfx 100) ;; Reprend la musique après ~1.6 sec
+                  )
                   (do
                     (music 2 -1 -1 false) ;; Track 2: Etoile collectée
                     (set timer_sfx 45) ;; Reprend la musique après ~0.75 sec
