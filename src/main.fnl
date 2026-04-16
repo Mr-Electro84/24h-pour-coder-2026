@@ -128,6 +128,20 @@
         (Planete.new 200 110 35 6 394)  ;; Forêt (id 394)
       ])
     )
+    (= n 3)
+    (do
+      (set etoiles [
+        (Etoile.new 140 90)
+        (Etoile.new 90 40)
+        (Etoile.new 200 60)
+      ])
+      (set planetes [
+        (Planete.new 60 40 60 25 454) ;; Trou Noir (id 454)
+        (Planete.new 120 50 40 8 386)   ;; Terre (id 386)
+        (Planete.new 170 30 45 10 390)  ;; Magma (id 390)
+        (Planete.new 200 90 35 25 454)  ;; Trou Noir (id 454)
+      ])
+    )
   )
 
   (set vaisseau.pos_x 5)
@@ -135,7 +149,7 @@
   (set vaisseau.vx 0)
   (set vaisseau.vy 0)
   (set select_vitesse 0)
-  (set vitesse_vaisseau 0)
+  (set vitesse_vaisseau 5)
 )
 
 (var x 0)
@@ -255,7 +269,7 @@
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
-          (if (< niveau 2)
+          (if (< niveau 3)
             (do
               (set niveau (+ niveau 1))
               (reinitialiser_niveau niveau)
@@ -306,8 +320,8 @@
           (for [i 1 (# planetes)]
             (let [p (. planetes i)]
               (let [
-                dx (- p.pos_x vaisseau.pos_x)
-                dy (- p.pos_y vaisseau.pos_y)
+                dx (- (+ p.pos_x 8) vaisseau.pos_x )
+                dy (- (+ p.pos_y 8) vaisseau.pos_y )
                 dist (math.sqrt (+ (* dx dx) (* dy dy)))
                 ;; Empêcher la distance de tomber trop bas pour éviter une division par zéro/infinité
                 dist (math.max dist 10)
