@@ -102,6 +102,7 @@
 (var skin_vaisseau_select_y 0)
 
 (var bande_son 0)
+(var timer_sfx 0) ;; Timer pour relancer la musique après un effet sonore
 
 (var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
 
@@ -263,9 +264,17 @@
   ;; 1. Nettoie l'écran
   (cls couleur-fond)
 
+  ;; Gestion du timer pour relancer la musique après un bruitage
+  (when (> timer_sfx 0)
+    (set timer_sfx (- timer_sfx 1))
+    (when (= timer_sfx 0)
+      (set musique false)
+    )
+  )
+
   ;; Lance la musique
   (when (and (= bande_son 0) (not musique))
-    (music 0)
+    (music 4)
     (set musique true)
   )
   
@@ -298,25 +307,23 @@
       ;; carré de sélection
       (if (= select_opt_menu 0) (rect 18 60 6 6 couleur-texte))
       (if (= select_opt_menu 1) (rect 18 70 6 6 couleur-texte))
-      (if (= select_opt_menu 2) (rect 18 80 6 6 couleur-texte))
 
       ;; menu
       (print "JOUER" 30 60 couleur-texte false 1)
       (print "Skins" 30 70 couleur-texte false 1)
-      (print "Configuration" 30 80 couleur-texte false 1)
 
       (print "ENTREE pour valider" 30 100 couleur-texte false 1)
 
       (when (and (btnp 0) (> select_opt_menu 0)) ;; bouton haut
         (set select_opt_menu (- select_opt_menu 1)))
-      (when (and (btnp 1) (< select_opt_menu 2)) ;; bouton bas
+      (when (and (btnp 1) (< select_opt_menu 1)) ;; bouton bas
         (set select_opt_menu (+ select_opt_menu 1)))
 
       (when (keyp 50)
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 7)
+            (set niveau 1)
             (reinitialiser_niveau niveau)
           )
         )
@@ -340,6 +347,12 @@
         (set bande_son 1)
       )
 
+      ;; Lance la musique
+      (when (and (= bande_son 1) (not musique))
+        (music 0)
+        (set musique true)
+      )
+
       ;; Dessiner les planètes du niveau actuel
       (for [i 1 (# planetes)]
         (let [p (. planetes i)]
@@ -359,7 +372,10 @@
                 ;; Jouer la piste audio correspondante à l'événement
                 (if (= etoiles_prises etoiles_requises)
                   (music 1 -1 -1 false) ;; Track 1: Niveau terminé
-                  (music 2 -1 -1 false) ;; Track 2: Etoile collectée
+                  (do
+                    (music 2 -1 -1 false) ;; Track 2: Etoile collectée
+                    (set timer_sfx 45) ;; Reprend la musique après ~0.75 sec
+                  )
                 )
               )
             )
@@ -401,6 +417,7 @@
                   dist (math.sqrt (+ (* dx dx) (* dy dy)))]
               (when (< dist 12)
                 (music 3 -1 -1 false) ;; Track 3: Dégâts / Astéroide
+                (set timer_sfx 50) ;; Reprend la musique après ~0.8 sec
                 (reinitialiser_niveau niveau)
               )
             )
