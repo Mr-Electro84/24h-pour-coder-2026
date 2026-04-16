@@ -143,6 +143,21 @@
         (Planete.new 200 90 35 25 454)  ;; Trou Noir (id 454)
       ])
     )
+    (= n 4)
+    (do
+      (set etoiles [
+        (Etoile.new 90 90)
+        (Etoile.new 90 40)
+        (Etoile.new 130 20)
+      ])
+      (set planetes [
+        ;;(Planete.new 100 40 60 25 454) ;; Trou Noir (id 454)
+        (Planete.new 50 70 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 100 60 40 8 386)   ;; Terre (id 386)
+        (Planete.new 110 30 45 10 390)  ;; Magma (id 390)
+        (Planete.new 60 30 35 25 454)  ;; Trou Noir (id 454)
+      ])
+    )
   )
 
   (set vaisseau.pos_x 5)
@@ -215,7 +230,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 1)
+            (set niveau 4)
             (reinitialiser_niveau niveau)
           )
         )
@@ -276,13 +291,13 @@
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
-          (if (< niveau 3)
+          (if (< niveau 4)
             (do
               (set niveau (+ niveau 1))
               (reinitialiser_niveau niveau)
             )
             (do
-              (set niveau 0)
+              (set niveau 4)
             )
           )
         )
