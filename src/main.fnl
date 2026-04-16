@@ -115,6 +115,13 @@
 (var planetes [])
 (var asteroides [])
 
+(var caillou_1 30)
+(var caillou_2 90)
+(var caillou_3 40)
+(var caillou_4 100)
+(var caillou_5 20)
+(var caillou_6 80)
+
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
 
 (fn reinitialiser_niveau [n]
@@ -212,6 +219,31 @@
         (Asteroide.new 110 40) ;; Astéroïde au dessus de l'étoile de Terre
       ])
     )
+    (= n 7)
+    (do
+      (set etoiles [
+        (Etoile.new 110 90)  ;; Étoile au centre
+        (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
+        (Etoile.new 180 30)  ;; Étoile au dessus de la Terre
+      ])
+      (set planetes [
+        (Planete.new 200 60 50 25 454)   ;; Trou Noir (id 454)
+        (Planete.new 60 60 40 8 386)   ;; Terre (id 386)
+
+        (Planete.new 110 50 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 150 90 45 10 390)  ;; Magma (id 390)
+        (Planete.new 150 30 50 15 450) ;; Métal (id 450)
+      ])
+      ;; Ajouter 1 astéroide
+      (set asteroides [
+        (Asteroide.new 50 caillou_1) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 50 caillou_2) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 110 caillou_3) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 110 caillou_4) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 170 caillou_5) ;; Astéroïde dans ton cul !!!!!!!!!!!!!!!!!
+        (Asteroide.new 170 caillou_6) ;; Astéroïde au dessus de l'étoile de Terre
+      ])
+    ) 
   )
 
   (set vaisseau.pos_x 5)
@@ -284,7 +316,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 6) ;; pour débug
+            (set niveau 1)
             (reinitialiser_niveau niveau)
           )
         )
@@ -334,6 +366,32 @@
             (e:dessiner))))
 
       ;; Gestion et affichage des astéroides
+      (when (= niveau 7) (do
+        (if (< caillou_1 -16) (set caillou_1 140))
+        (if (< caillou_2 -16) (set caillou_2 140))
+        (if (> caillou_3 140) (set caillou_3 -16))
+        (if (> caillou_4 140) (set caillou_4 -16))
+        (if (< caillou_5 -16) (set caillou_5 140))
+        (if (< caillou_6 -16) (set caillou_6 140))
+      
+        ;; Animation des cailloux avec une vitesse réduite
+        (set caillou_1 (- caillou_1 1))
+        (set caillou_2 (- caillou_2 2))
+        (set caillou_3 (+ caillou_3 1))
+        (set caillou_4 (+ caillou_4 2))
+        (set caillou_5 (- caillou_5 1))
+        (set caillou_6 (- caillou_6 2))
+        
+        ;; On met à jour la position y de chaque objet
+        (when (= (# asteroides) 6)
+          (tset (. asteroides 1) :pos_y caillou_1)
+          (tset (. asteroides 2) :pos_y caillou_2)
+          (tset (. asteroides 3) :pos_y caillou_3)
+          (tset (. asteroides 4) :pos_y caillou_4)
+          (tset (. asteroides 5) :pos_y caillou_5)
+          (tset (. asteroides 6) :pos_y caillou_6))
+      ))
+
       (for [i 1 (# asteroides)]
         (let [a (. asteroides i)]
           (when (not a.prise)
@@ -356,11 +414,11 @@
       ;; Victoire
       (when (>= etoiles_prises etoiles_requises)
         (print "NIVEAU TERMINE !" 40 60 11 false 2)
-        (if (< niveau 3)
+        (if (< niveau 7)
           (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
         )
         (when (keyp 50)
-          (if (< niveau 6)
+          (if (< niveau 7)
             (do
               (set niveau (+ niveau 1))
               (reinitialiser_niveau niveau)
