@@ -320,13 +320,8 @@
           (for [i 1 (# planetes)]
             (let [p (. planetes i)]
               (let [
-<<<<<<< Updated upstream
-                dx (- (+ p.pos_x 8) vaisseau.pos_x )
-                dy (- (+ p.pos_y 8) vaisseau.pos_y )
-=======
                 dx (- (+ p.pos_x 16) (+ vaisseau.pos_x 8))
                 dy (- (+ p.pos_y 16) (+ vaisseau.pos_y 8))
->>>>>>> Stashed changes
                 dist (math.sqrt (+ (* dx dx) (* dy dy)))
                 ;; Empêcher la distance de tomber trop bas pour éviter une division par zéro/infinité
                 dist (math.max dist 10)
