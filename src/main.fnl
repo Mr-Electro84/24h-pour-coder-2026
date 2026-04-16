@@ -240,7 +240,7 @@
         (Asteroide.new 50 caillou_2) ;; Astéroïde au dessus de l'étoile de Terre
         (Asteroide.new 110 caillou_3) ;; Astéroïde au dessus de l'étoile de Terre
         (Asteroide.new 110 caillou_4) ;; Astéroïde au dessus de l'étoile de Terre
-        (Asteroide.new 170 caillou_5) ;; Astéroïde dans ton cul !!!!!!!!!!!!!!!!!
+        (Asteroide.new 170 caillou_5)
         (Asteroide.new 170 caillou_6) ;; Astéroïde au dessus de l'étoile de Terre
       ])
     ) 
@@ -316,7 +316,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 1)
+            (set niveau 7)
             (reinitialiser_niveau niveau)
           )
         )
@@ -382,14 +382,14 @@
         (set caillou_5 (- caillou_5 1))
         (set caillou_6 (- caillou_6 2))
         
-        ;; On met à jour la position y de chaque objet
-        (when (= (# asteroides) 6)
-          (tset (. asteroides 1) :pos_y caillou_1)
-          (tset (. asteroides 2) :pos_y caillou_2)
-          (tset (. asteroides 3) :pos_y caillou_3)
-          (tset (. asteroides 4) :pos_y caillou_4)
-          (tset (. asteroides 5) :pos_y caillou_5)
-          (tset (. asteroides 6) :pos_y caillou_6))
+        ;; Configuration séquentielle propre et sécurisée
+        (let [n (length asteroides)]
+          (when (> n 0) (tset (. asteroides 1) :pos_y caillou_1))
+          (when (> n 1) (tset (. asteroides 2) :pos_y caillou_2))
+          (when (> n 2) (tset (. asteroides 3) :pos_y caillou_3))
+          (when (> n 3) (tset (. asteroides 4) :pos_y caillou_4))
+          (when (> n 4) (tset (. asteroides 5) :pos_y caillou_5))
+          (when (> n 5) (tset (. asteroides 6) :pos_y caillou_6)))
       ))
 
       (for [i 1 (# asteroides)]
