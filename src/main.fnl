@@ -85,6 +85,7 @@
 (var skin_vaisseau_select_x 0)
 (var skin_vaisseau_select_y 0)
 
+(var bande_son 0)
 
 (var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
 
@@ -162,7 +163,7 @@
   (cls couleur-fond)
 
   ;; Lance la musique
-  (when (not musique)
+  (when (and (= bande_son 0) (not musique))
     (music 0)
     (set musique true)
   )
@@ -232,9 +233,10 @@
     )
     (when (> niveau 0)
       ;; désactiver la musique
-      (when musique
+      (when (and musique (= bande_son 0))
         (music)
         (set musique false)
+        (set bande_son 1)
       )
 
       ;; Dessiner les planètes du niveau actuel
@@ -253,6 +255,11 @@
               (when (< dist 12)
                 (set e.prise true)
                 (set etoiles_prises (+ etoiles_prises 1))
+                ;; Jouer la piste audio correspondante à l'événement
+                (if (= etoiles_prises etoiles_requises)
+                  (music 1 -1 -1 false) ;; Track 1: Niveau terminé
+                  (music 2 -1 -1 false) ;; Track 2: Etoile collectée
+                )
               )
             )
             (e:dessiner))))
