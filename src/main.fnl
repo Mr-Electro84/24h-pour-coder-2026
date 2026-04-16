@@ -30,6 +30,10 @@
   (spr self.num self.pos_x self.pos_y 0 1 0 0 2 2)
 )
 
+(fn Vaisseau.config_skin [self num]
+  (set self.num num)
+)
+
 ;; ## Objet Planete
 (local Planete {})
 (set Planete.__index Planete)
@@ -64,6 +68,22 @@
 (fn Etoile.dessiner [self]
   (spr 296 self.pos_x self.pos_y 0 1 0 0 2 2))
 
+;; ## Objet astéroide
+(local Asteroide {})
+(set Asteroide.__index Asteroide)
+
+;; Constructeur
+(fn Asteroide.new [pos_x pos_y]
+  (let [instance {:pos_x pos_x :pos_y pos_y :prise false}]
+    (setmetatable instance Asteroide)))
+
+;; Méthodes
+(fn Asteroide.desc [self]
+  (print (.. "pos x : " self.pos_x " pos y : " self.pos_y) 45 45 12))
+
+(fn Asteroide.dessiner [self]
+  (spr 330 self.pos_x self.pos_y 0 1 0 0 2 2))
+
 ;; -- FIN DEFINITIONS OBJETS --
 
 (var couleur-texte 12)  ; 6 = vert. Essaie 11 (bleu clair)
@@ -77,6 +97,12 @@
 (var select_opt_menu 0)
 (var musique false)
 
+(var skin_vaisseau false) ;; visualiser les skins
+(var skin_vaisseau_select_x 0)
+(var skin_vaisseau_select_y 0)
+
+(var bande_son 0)
+
 (var select_vitesse 0) ;; 0 = pas de vitesse, 1 = vitesse x, 2 = vitesse y
 
 (var vitesse_vaisseau 0) ;; déplacement x
@@ -86,22 +112,114 @@
 (var etoiles_requises 3)
 
 (var etoiles [])
+(var planetes [])
+(var asteroides [])
 
 (local vaisseau (Vaisseau.new 258 5 60 100)) ;; Placer le vaisseau à gauche et au centre
 
-(fn reinitialiser_niveau []
+(fn reinitialiser_niveau [n]
   (set etoiles_prises 0)
-  (set etoiles [
-    (Etoile.new 100 70)
-    (Etoile.new 60 60)
-    (Etoile.new 220 60)
-  ])
+  (set asteroides [])
+  (if (= n 1)
+    (do
+      (set etoiles [
+        (Etoile.new 100 70)
+        (Etoile.new 60 60)
+        (Etoile.new 220 60)
+      ])
+      (set planetes [
+        (Planete.new 100 100 50 10 390)
+        (Planete.new 50 30 50 12 386)
+        (Planete.new 200 90 30 5 394)
+      ])
+    )
+    (= n 2)
+    (do
+      (set etoiles [
+        (Etoile.new 140 50)
+        (Etoile.new 60 70)
+        (Etoile.new 200 60)
+      ])
+      (set planetes [
+        (Planete.new 60 30 40 8 386)   ;; Terre (id 386)
+        (Planete.new 120 100 50 15 450) ;; Métal (id 450)
+        (Planete.new 180 30 45 10 390)  ;; Magma (id 390)
+        (Planete.new 200 110 35 6 394)  ;; Forêt (id 394)
+      ])
+    )
+    (= n 3)
+    (do
+      (set etoiles [
+        (Etoile.new 140 90)
+        (Etoile.new 90 40)
+        (Etoile.new 200 60)
+      ])
+      (set planetes [
+        (Planete.new 60 40 60 25 454) ;; Trou Noir (id 454)
+        (Planete.new 120 50 40 8 386)   ;; Terre (id 386)
+        (Planete.new 170 30 45 10 390)  ;; Magma (id 390)
+        (Planete.new 200 90 35 25 454)  ;; Trou Noir (id 454)
+      ])
+    )
+    (= n 4)
+    (do
+      (set etoiles [
+        (Etoile.new 90 90)
+        (Etoile.new 90 40)
+        (Etoile.new 130 20)
+      ])
+      (set planetes [
+        ;;(Planete.new 100 40 60 25 454) ;; Trou Noir (id 454)
+        (Planete.new 50 70 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 100 60 40 8 386)   ;; Terre (id 386)
+        (Planete.new 110 30 45 10 390)  ;; Magma (id 390)
+        (Planete.new 60 30 35 25 454)  ;; Trou Noir (id 454)
+      ])
+    )
+    (= n 5)
+    (do
+      (set etoiles [
+        (Etoile.new 120 50)  ;; Étoile au centre
+        (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
+        (Etoile.new 180 90)  ;; Étoile au dessus de la Terre
+      ])
+      (set planetes [
+        (Planete.new 100 80 40 8 386)   ;; Terre (id 386)
+        (Planete.new 150 95 35 6 394)  ;; Forêt (id 394)
+      ])
+      ;; Ajouter 1 astéroide
+      (set asteroides [
+        (Asteroide.new 180 70) ;; Astéroïde au dessus de l'étoile de Terre
+      ])
+    )
+    (= n 6)
+    (do
+      (set etoiles [
+        (Etoile.new 110 90)  ;; Étoile au centre
+        (Etoile.new 150 70)  ;; Étoile au dessus de la forêt
+        (Etoile.new 180 30)  ;; Étoile au dessus de la Terre
+      ])
+      (set planetes [
+        (Planete.new 60 80 40 8 386)   ;; Terre (id 386)
+        (Planete.new 110 50 35 6 394)  ;; Forêt (id 394)
+        (Planete.new 150 90 45 10 390)  ;; Magma (id 390)
+        (Planete.new 150 30 50 15 450) ;; Métal (id 450)
+      ])
+      ;; Ajouter 1 astéroide
+      (set asteroides [
+        (Asteroide.new 50 30) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 50 70) ;; Astéroïde au dessus de l'étoile de Terre
+        (Asteroide.new 110 40) ;; Astéroïde au dessus de l'étoile de Terre
+      ])
+    )
+  )
+
   (set vaisseau.pos_x 5)
   (set vaisseau.pos_y 60)
   (set vaisseau.vx 0)
   (set vaisseau.vy 0)
   (set select_vitesse 0)
-  (set vitesse_vaisseau 0)
+  (set vitesse_vaisseau 5)
 )
 
 (var x 0)
@@ -114,7 +232,7 @@
   (cls couleur-fond)
 
   ;; Lance la musique
-  (when (not musique)
+  (when (and (= bande_son 0) (not musique))
     (music 0)
     (set musique true)
   )
@@ -155,7 +273,7 @@
       (print "Skins" 30 70 couleur-texte false 1)
       (print "Configuration" 30 80 couleur-texte false 1)
 
-      (print "Entree pour valider" 30 100 couleur-texte false 1)
+      (print "ENTREE pour valider" 30 100 couleur-texte false 1)
 
       (when (and (btnp 0) (> select_opt_menu 0)) ;; bouton haut
         (set select_opt_menu (- select_opt_menu 1)))
@@ -163,30 +281,37 @@
         (set select_opt_menu (+ select_opt_menu 1)))
 
       (when (keyp 50)
+        ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (reinitialiser_niveau)
-            (set niveau 1)
+            (set niveau 6) ;; pour débug
+            (reinitialiser_niveau niveau)
+          )
+        )
+        ;; Si on sélectionne "SKINS"
+        (if (= select_opt_menu 1)
+          (do
+            (set skin_vaisseau true)
+            (set niveau -1)
+            (set D_time (time))
           )
         )
       )
+
       
     )
-    (when (= niveau 1)
+    (when (> niveau 0)
       ;; désactiver la musique
-      (when musique
+      (when (and musique (= bande_son 0))
         (music)
         (set musique false)
+        (set bande_son 1)
       )
 
-      (local planete1 (Planete.new 100 100 50 10 390)) ;; rappel (Planete.new pos_x pos_y rayon_gravite gravite id_sprite)
-      (planete1:dessiner)
-      (local planete2 (Planete.new 50 30 50 12 386)) ;; autre couleur et autre placement
-      (planete2:dessiner)
-      (local planete3 (Planete.new 200 90 30 5 394)) ;; autre couleur et autre placement
-      (planete3:dessiner)
-      ;; Grouper les planètes dans un tableau pour pouvoir itérer dessus pour la gravité
-      (local planetes [planete1 planete2 planete3])
+      ;; Dessiner les planètes du niveau actuel
+      (for [i 1 (# planetes)]
+        (let [p (. planetes i)]
+          (p:dessiner)))
 
       ;; Gestion et affichage des étoiles
       (for [i 1 (# etoiles)]
@@ -199,9 +324,29 @@
               (when (< dist 12)
                 (set e.prise true)
                 (set etoiles_prises (+ etoiles_prises 1))
+                ;; Jouer la piste audio correspondante à l'événement
+                (if (= etoiles_prises etoiles_requises)
+                  (music 1 -1 -1 false) ;; Track 1: Niveau terminé
+                  (music 2 -1 -1 false) ;; Track 2: Etoile collectée
+                )
               )
             )
             (e:dessiner))))
+
+      ;; Gestion et affichage des astéroides
+      (for [i 1 (# asteroides)]
+        (let [a (. asteroides i)]
+          (when (not a.prise)
+            ;; On calcule la distance (les sprites font 16x16, on centre à +8)
+            (let [dx (- (+ a.pos_x 8) (+ vaisseau.pos_x 8))
+                  dy (- (+ a.pos_y 8) (+ vaisseau.pos_y 8))
+                  dist (math.sqrt (+ (* dx dx) (* dy dy)))]
+              (when (< dist 12)
+                (music 3 -1 -1 false) ;; Track 3: Dégâts / Astéroide
+                (reinitialiser_niveau niveau)
+              )
+            )
+            (a:dessiner))))
 
       (vaisseau:dessiner)
       
@@ -210,16 +355,26 @@
 
       ;; Victoire
       (when (>= etoiles_prises etoiles_requises)
-        (print "NIVEAU TERMINE !" 80 60 11 false 2)
-        (print "Presser Entree pour la suite" 75 80 11 false 1)
+        (print "NIVEAU TERMINE !" 40 60 11 false 2)
+        (if (< niveau 3)
+          (print "Presser Entree pour le niveau suivant" 30 80 11 false 1)
+        )
         (when (keyp 50)
-          (set niveau 2)
+          (if (< niveau 6)
+            (do
+              (set niveau (+ niveau 1))
+              (reinitialiser_niveau niveau)
+            )
+            (do
+              (set niveau 0)
+            )
+          )
         )
       )
 
       ;; Réinitialisation niveau en appuyant sur BACKSPACE (51)
       (when (keyp 51)
-        (reinitialiser_niveau)
+        (reinitialiser_niveau niveau)
       )
 
       (if (= select_vitesse 0)
@@ -256,8 +411,8 @@
           (for [i 1 (# planetes)]
             (let [p (. planetes i)]
               (let [
-                dx (- p.pos_x vaisseau.pos_x)
-                dy (- p.pos_y vaisseau.pos_y)
+                dx (- (+ p.pos_x 16) (+ vaisseau.pos_x 8))
+                dy (- (+ p.pos_y 16) (+ vaisseau.pos_y 8))
                 dist (math.sqrt (+ (* dx dx) (* dy dy)))
                 ;; Empêcher la distance de tomber trop bas pour éviter une division par zéro/infinité
                 dist (math.max dist 10)
@@ -288,5 +443,55 @@
 
     )
   )
-  
+    ;; === MENU DE SÉLECTION DE SKIN ===
+  (when (= skin_vaisseau true)
+    
+    ;; Rectangle de sélection
+    (rect (+ 8 (* skin_vaisseau_select_x 30)) (+ 28 (* skin_vaisseau_select_y 30)) 20 20 2)
+    
+    ;; Première ligne de skins
+    (for [i 0 6]
+      (spr (+ 258 (* i 2)) (+ 10 (* i 30)) 30 0 1 0 0 2 2)
+    )
+    ;; Deuxième ligne de skins
+    (for [i 0 1]
+      (spr (+ 290 (* i 2)) (+ 10 (* i 30)) 60 0 1 0 0 2 2)
+    )
+    
+    (print "Skins (ESPACE pour valider)" 10 10 couleur-texte false 1)
+    (print "ENTREE pour retourner" 10 100 couleur-texte false 1)
+
+    ;; Mouvements du curseur
+    (when (and (btnp 0) (> skin_vaisseau_select_y 0)) ;; Haut
+      (set skin_vaisseau_select_y (- skin_vaisseau_select_y 1))
+      (set skin_vaisseau_select_x 0))
+      
+    (when (and (btnp 1) (< skin_vaisseau_select_y 1)) ;; Bas
+      (set skin_vaisseau_select_y (+ skin_vaisseau_select_y 1))
+      (set skin_vaisseau_select_x 0))
+
+    (when (and (btnp 2) (> skin_vaisseau_select_x 0)) ;; Gauche
+      (set skin_vaisseau_select_x (- skin_vaisseau_select_x 1)))
+      
+    (when (and (btnp 3) (or (and (< skin_vaisseau_select_x 6) (= skin_vaisseau_select_y 0)) 
+                            (and (< skin_vaisseau_select_x 1) (= skin_vaisseau_select_y 1)))) ;; Droite
+      (set skin_vaisseau_select_x (+ skin_vaisseau_select_x 1)))
+
+    ;; Valider un skin avec ESPACE
+    (when (keyp 48)
+      (when (= skin_vaisseau_select_y 0)
+        (vaisseau:config_skin (+ 258 (* skin_vaisseau_select_x 2)))
+      )
+      (when (= skin_vaisseau_select_y 1)
+        (vaisseau:config_skin (+ 290 (* skin_vaisseau_select_x 2)))
+      )
+    )
+
+    ;; Retourner au menu principal avec ENTREE (et empêcher les double-inputs avec un délai)
+    (when (and (keyp 50) (> (- (time) D_time) 10))
+      (set skin_vaisseau false)
+      (set niveau 0)
+      (set D_time (time))
+    )
+  )
 )
