@@ -230,7 +230,7 @@
         ;; Si on démarre le jeu (JOUER)
         (if (= select_opt_menu 0) 
           (do
-            (set niveau 4)
+            (set niveau 1)
             (reinitialiser_niveau niveau)
           )
         )
